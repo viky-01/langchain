@@ -36,22 +36,52 @@ llm = ChatGoogleGenerativeAI(
 
 str_parser = StrOutputParser()
 
+
+
 # TASK 4 [Custom Runable]
 
 def dictionay_maker(text: str) -> dict:
     return  {"text" : text}
 
 dictionay_maker_runnabel = RunnableLambda(dictionay_maker)
-print(dictionay_maker.invoke("hello world"))
+
 
 # TASK 5 [Template For Post]
 
-prompt_post = PromptTemplate.chatPromptTemplate(
-    
+prompt_post = ChatPromptTemplate.from_messages(
+    messages = [
+        ("system", "you are a social media post generator. "),
+        ("human", "create a post for the following text for linkedlin : {text}")
+    ]
+       
 )
 
-# chain = prompt_template | llm | str_parser
 
-# response = chain.invoke({"input" : "what is capital of Bihar"})
+# TASK 6 [Generate the POST]
 
-# print(response)
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature = 1.0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+    google_api_key=os.getenv("GEMINI_API_KEY"),
+)
+
+
+# TASK 7 [Output Parser]
+
+str_parser = StrOutputParser()
+
+
+#CHAIN
+
+chain = prompt_template | llm | str_parser | dictionay_maker_runnabel | prompt_post | llm | str_parser
+
+
+response = chain.invoke("What is the capital of Punjab")
+
+
+
+print(response)
+ 
